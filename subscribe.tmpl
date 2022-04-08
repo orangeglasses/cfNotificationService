@@ -1,0 +1,32 @@
+<html>
+<head>
+    <title>{{.AppName}}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class='box'>
+        <div>
+            <h1 class='h1-title'>{{.AppName}} subscription for {{.Username}}</h1>                   
+        </div>
+        <div class='form'>
+            <form class='form-requestform' action="/subscribe/{{.Username}}" method="post">   
+                {{- $currentSubAddresses := .CurrentSub.Addresses -}}
+                {{- range .Types -}}                
+                <input type="hidden" readonly name="type" value="{{.}}">                                
+                <p><input class='input-username' type="text" name="address" placeholder="enter {{.}} address" value="{{index $currentSubAddresses .}}"></p>                
+                {{ end }}
+                <p><input class='input-submit' type="submit" value="SAVE"></p>                
+            </form>
+        </div>
+
+        <div>
+        {{- if .Subscribed -}}
+            <h1 class='h1-subtitle'><font color=green>Subscription active</font></h1>
+            <h1 class='h1-subtitle'>To unsubscribe: press save with a blank address field</h1>            
+        {{- else -}}
+            <h1 class='h1-subtitle'><font color=red>No subscription active</font></h1>            
+        {{- end -}}
+        </div>
+    </div>
+</body>
+</html>

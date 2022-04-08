@@ -1,0 +1,1 @@
+curl -u testuser:testpassword -v -X POST -H "Content-Type: application/json" cfnotificationservice.apps.cf.automate-it.lab/send --data @test-message.json

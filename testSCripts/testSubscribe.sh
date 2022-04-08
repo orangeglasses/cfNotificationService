@@ -1,0 +1,1 @@
+curl -v -X POST -H "Content-Type: application/json" cfnotificationservice.apps.cf.automate-it.lab/subscribe/admin --data @testSubscription.json

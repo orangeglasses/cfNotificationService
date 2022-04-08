@@ -1,0 +1,31 @@
+---
+applications:
+- name: cfNotificationService
+  env:
+    CF_USER: ota:admin
+    CF_PASSWORD: ota:N55tr132xF8uH91uaxV4COkL0blV7k
+    EMAIL_HOST: 192.168.192.238
+    EMAIL_PORT: '1025'
+    EMAIL_FROM: cfNotificationService@test.local
+    GOVERSION: '1.17'
+    CF_API: ota:api.sys.cf.automate-it.lab
+    API_USERS: testuser:testpassword
+    CLIENT_ID: testclient
+    CLIENT_SECRET: testclient
+    OAUTH_PROVIDER_URL: https://uaa.sys.cf.automate-it.lab/oauth/token
+    SESSION_KEY: keykeykey
+    APP_NAME: "Notification service"
+  buildpacks:
+  - go_buildpack
+  stack: cflinuxfs3
+  services:
+  - notification
+  routes:
+  - route: cfNotificationService.apps.cf.automate-it.lab
+    protocol: http1
+  processes:
+  - type: web
+    instances: 1
+    memory: 1024M
+    disk_quota: 1024M
+    health-check-type: port
