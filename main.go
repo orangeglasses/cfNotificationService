@@ -23,11 +23,20 @@ func main() {
 	}
 
 	cfSpaceUserGetter := NewCfSpaceUserGetter()
+
 	for environment, cfapi := range config.CFApi {
+
 		c := &cfclient.Config{
-			ApiAddress: "https://" + cfapi,
-			Username:   config.CFUser[environment],
-			Password:   config.CFPassword[environment],
+			ApiAddress:        "https://" + cfapi,
+			SkipSslValidation: false,
+		}
+
+		if cfuser, ok := config.CFUser[environment]; ok {
+			c.Username = cfuser
+			c.Password = config.CFPassword[environment]
+		} else {
+			c.ClientID = config.CFClient[environment]
+			c.ClientSecret = config.CFSecret[environment]
 		}
 
 		cfClient, err := cfclient.NewClient(c)
