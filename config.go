@@ -9,8 +9,10 @@ import (
 
 type notificationServerConfig struct {
 	CFApi      map[string]string `envconfig:"cf_api" required:"true"`
-	CFUser     map[string]string `envconfig:"cf_user" required:"true"`
-	CFPassword map[string]string `envconfig:"cf_password" required:"true"`
+	CFUser     map[string]string `envconfig:"cf_user"`
+	CFPassword map[string]string `envconfig:"cf_password"`
+	CFClient   map[string]string `envconfig:"cf_client"`
+	CFSecret   map[string]string `envconfig:"cf_secret"`
 
 	EmailHost     string `envconfig:"email_host" required:"true"`
 	EmailPort     int    `envconfig:"email_port" required:"true"`
@@ -40,6 +42,14 @@ func notificationServerConfigLoad() (notificationServerConfig, error) {
 	err := envconfig.Process("", &config)
 	if err != nil {
 		return notificationServerConfig{}, err
+	}
+
+	if len(config.CFUser) == 0 && len(config.CFClient) == 0 {
+		log.Fatal("Please set CF_USER/CF_PASSWORD or CF_CLIENT/CF_SECRET")
+	}
+
+	if len(config.CFUser) != 0 && len(config.CFClient) != 0 {
+		log.Println("Both CF_USER and CF_CLIENT are set. I'll use CF_CLIENT and ignore CF_USER.")
 	}
 
 	if cfenv.IsRunningOnCF() {

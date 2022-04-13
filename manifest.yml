@@ -19,7 +19,7 @@ applications:
   - go_buildpack
   stack: cflinuxfs3
   services:
-  - notification
+  - ((redis-instance-name))
   routes:
   - route: ((route))
     protocol: http1
