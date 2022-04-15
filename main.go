@@ -72,6 +72,7 @@ func main() {
 		apiUsers:     config.ApiUsers,
 		sessionStore: sessions.NewCookieStore([]byte(config.SessionKey)),
 		appName:      config.AppName,
+		appInfo:      config.AppInfo,
 	}
 
 	ns.RegisterUserGetter("space", cfSpaceUserGetter)

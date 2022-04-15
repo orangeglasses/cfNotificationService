@@ -4,6 +4,11 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <div class='info'>
+    <p class=info>
+    {{.Info}}
+    </p>
+    </div>
     <div class='box'>
         <div>
             <h1 class='h1-title'>{{.AppName}} subscription for {{.Username}}</h1>                   
@@ -27,6 +32,6 @@
             <h1 class='h1-subtitle'><font color=red>No subscription active</font></h1>            
         {{- end -}}
         </div>
-    </div>
+    </div>    
 </body>
 </html>

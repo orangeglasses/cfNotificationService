@@ -14,6 +14,21 @@ div.box {
     font-size: 18px;
 }
 
+div.info {    
+    position: fixed;
+    top: 0;
+    left: 0;  
+    border: 2px solid #ff7376;  
+    padding: 3px  
+}
+ 
+p.info {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
 div.form {
     display: inline-block;
 }

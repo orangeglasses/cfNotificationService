@@ -33,6 +33,7 @@ type notificationServerConfig struct {
 	SessionKey       string `envconfig:"SESSION_KEY" required:"true"`
 
 	AppName string `envconfig:"app_name"`
+	AppInfo string `envconfig:"app_info"`
 
 	AppPort int `default:"9000"`
 }

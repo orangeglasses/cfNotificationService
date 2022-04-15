@@ -29,6 +29,7 @@ type notificationServer struct {
 	oidcProvider        *oidc.Provider
 	oidcConfig          *oidc.Config
 	appName             string
+	appInfo             string
 }
 
 type UserGetter interface {
@@ -236,12 +237,14 @@ func (ns *notificationServer) rootHandler(w http.ResponseWriter, r *http.Request
 		Types      []string
 		CurrentSub Subscription
 		Subscribed bool
+		Info       string
 	}{
 		AppName:    ns.appName,
 		Username:   username.(string),
 		Types:      ns.getSupportedSenders(),
 		CurrentSub: subInfo,
 		Subscribed: (len(subInfo.Addresses) > 0),
+		Info:       ns.appInfo,
 	}
 
 	err := tmpl.Execute(w, data)
