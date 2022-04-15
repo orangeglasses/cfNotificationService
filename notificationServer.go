@@ -237,14 +237,14 @@ func (ns *notificationServer) rootHandler(w http.ResponseWriter, r *http.Request
 		Types      []string
 		CurrentSub Subscription
 		Subscribed bool
-		Info       string
+		Info       template.HTML
 	}{
 		AppName:    ns.appName,
 		Username:   username.(string),
 		Types:      ns.getSupportedSenders(),
 		CurrentSub: subInfo,
 		Subscribed: (len(subInfo.Addresses) > 0),
-		Info:       ns.appInfo,
+		Info:       template.HTML(ns.appInfo),
 	}
 
 	err := tmpl.Execute(w, data)
