@@ -24,8 +24,9 @@ func main() {
 
 	cfSpaceUserGetter := NewCfSpaceUserGetter()
 
+	log.Println("Loading environments...")
 	for environment, cfapi := range config.CFApi {
-
+		log.Println("Creating client for ", environment)
 		c := &cfclient.Config{
 			ApiAddress:        "https://" + cfapi,
 			SkipSslValidation: false,
