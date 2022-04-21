@@ -42,7 +42,7 @@ func main() {
 
 		cfClient, err := cfclient.NewClient(c)
 		if err != nil {
-			log.Fatal("Failed logging into cloudfoundry", err)
+			log.Fatalln("Failed logging into cloudfoundry", err)
 		}
 
 		cfSpaceUserGetter.RegisterEnvironment(environment, cfClient)
