@@ -24,9 +24,16 @@ div.info {
  
 p.info {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    text-align: center;
+    text-align: left;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: normal;
+}
+
+ul.info {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-align: left;
+    font-size: 12px;
+    font-weight: italic;
 }
 
 div.form {
