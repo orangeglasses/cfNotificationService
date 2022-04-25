@@ -23,7 +23,7 @@ applications:
   routes:
   - route: ((route))
     protocol: http1
-  instances: 3
+  instances: ((instances))
   memory: 32M
   disk_quota: 64M
   health-check-type: port
