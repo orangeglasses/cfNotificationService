@@ -4,8 +4,8 @@
     "message": "Hello world",
     "validity": "1m",
     "target": {
-        "type": "space",
+        "type": "idmgroup",
         "environment": "ota",
-        "Id": "29847d92-5ef7-49e7-bb2c-2516720e455a"
+        "Id": "testgroup"
     }
 }

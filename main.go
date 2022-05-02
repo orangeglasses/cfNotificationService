@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/vchrisr/go-freeipa/freeipa"
 	"golang.org/x/oauth2"
 )
 
@@ -77,6 +79,23 @@ func main() {
 	}
 
 	ns.RegisterUserGetter("space", cfSpaceUserGetter)
+
+	if config.IpaHost != "" {
+		fmt.Println(config.IpaUser)
+		fmt.Println(config.IpaPassword)
+		ipaClient, err := freeipa.Connect(config.IpaHost, &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}, config.IpaUser, config.IpaPassword)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ns.RegisterUserGetter("idmgroup", NewIpaUserGetter(ipaClient))
+	}
+
 	ns.RegisterNotificationSender("email", NewEmailSender(config.EmailHost, config.EmailPort, config.EmailFrom))
 
 	r := mux.NewRouter()

@@ -50,6 +50,9 @@ github.com/mitchellh/mapstructure
 # github.com/pkg/errors v0.8.1
 ## explicit
 github.com/pkg/errors
+# github.com/vchrisr/go-freeipa/freeipa v0.0.0-20210122101421-27481189d5d9
+## explicit; go 1.13
+github.com/vchrisr/go-freeipa/freeipa
 # golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 ## explicit
 golang.org/x/crypto/ed25519

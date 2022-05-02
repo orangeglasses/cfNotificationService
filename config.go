@@ -20,6 +20,10 @@ type notificationServerConfig struct {
 	EmailUser     string `envconfig:"email_user" required:"false"`
 	EmailPassword string `envconfig:"email_password" required:"false"`
 
+	IpaHost     string `envconfig:"ipa_host" required:"false"`
+	IpaUser     string `envconfig:"ipa_user" required:"false"`
+	IpaPassword string `envconfig:"ipa_password" required:"false"`
+
 	RedisHost     string `envconfig:"redis_host" required:"false"`
 	RedisPort     int    `envconfig:"redis_port" default:"6379"`
 	RedisPassword string `envconfig:"redis_password" default:""`
@@ -68,6 +72,10 @@ func notificationServerConfigLoad() (notificationServerConfig, error) {
 		if config.RedisHost == "" {
 			log.Fatalln("No Redis host configured. Please set REDIS_HOST env var.")
 		}
+	}
+
+	if config.IpaHost != "" && (config.IpaUser == "" || config.IpaPassword == "") {
+		log.Fatalln("IPA host configured but username or pasworde are empty.")
 	}
 
 	return config, nil

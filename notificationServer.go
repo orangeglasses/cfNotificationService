@@ -89,14 +89,22 @@ func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	//fail if no ID was given
+	if msg.Id == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	msgKey := "msg-" + msg.Id
+
 	exp, err := time.ParseDuration(msg.ExpiresIn)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	//check if we sent message with sme id previously
-	_, err = ns.redisClient.Get(ctx, msg.Id).Result()
+	//check if we sent message with same id previously
+	_, err = ns.redisClient.Get(ctx, msgKey).Result()
 	if err == nil { //message found, don't sent it again
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprintf(w, "existing message, not sending again")
@@ -105,7 +113,7 @@ func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request
 
 	//message not stored, let's store it if it has expiration set
 	if exp > 0 {
-		_, err = ns.redisClient.Set(ctx, msg.Id, msg, exp).Result()
+		_, err = ns.redisClient.Set(ctx, msgKey, msg, exp).Result()
 		if err != nil {
 			w.WriteHeader(http.StatusAccepted)
 			fmt.Fprintf(w, "message accepted but unable to store")
