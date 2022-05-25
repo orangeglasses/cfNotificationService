@@ -81,8 +81,6 @@ func main() {
 	ns.RegisterUserGetter("space", cfSpaceUserGetter)
 
 	if config.IpaHost != "" {
-		fmt.Println(config.IpaUser)
-		fmt.Println(config.IpaPassword)
 		ipaClient, err := freeipa.Connect(config.IpaHost, &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
@@ -97,6 +95,12 @@ func main() {
 	}
 
 	ns.RegisterNotificationSender("email", NewEmailSender(config.EmailHost, config.EmailPort, config.EmailFrom))
+
+	if config.RabbitURI != "" {
+		for rabbitSender, template := range config.RabbitTemplates {
+			ns.RegisterNotificationSender(rabbitSender, NewRabbitSender(config.RabbitURI, config.RabbitExchange, template))
+		}
+	}
 
 	r := mux.NewRouter()
 	r.Path("/").Methods(http.MethodGet).HandlerFunc(ns.rootHandler)

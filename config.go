@@ -29,6 +29,10 @@ type notificationServerConfig struct {
 	RedisPassword string `envconfig:"redis_password" default:""`
 	RedisDB       int    `envconfig:"redis_db" default:"0"`
 
+	RabbitURI       string            `enconfig:"rabbit_uri" required:"false"`
+	RabbitExchange  string            `envconfig:"rabbit_exchange" required:"false"`
+	RabbitTemplates map[string]string `envconfig:"rabbit_templates" required:"false"`
+
 	ApiUsers map[string]string `envconfig:"api_users" required:"true"`
 
 	ClientID         string `envconfig:"CLIENT_ID" required:"true"`
@@ -68,6 +72,7 @@ func notificationServerConfigLoad() (notificationServerConfig, error) {
 		config.RedisHost = redisServices[0].Credentials["host"].(string)
 		config.RedisPort = int(redisServices[0].Credentials["port"].(float64))
 		config.RedisPassword = redisServices[0].Credentials["password"].(string)
+
 	} else {
 		if config.RedisHost == "" {
 			log.Fatalln("No Redis host configured. Please set REDIS_HOST env var.")

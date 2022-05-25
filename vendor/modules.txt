@@ -50,9 +50,15 @@ github.com/mitchellh/mapstructure
 # github.com/pkg/errors v0.8.1
 ## explicit
 github.com/pkg/errors
+# github.com/rabbitmq/amqp091-go v1.3.0
+## explicit; go 1.15
+github.com/rabbitmq/amqp091-go
 # github.com/vchrisr/go-freeipa/freeipa v0.0.0-20210122101421-27481189d5d9
 ## explicit; go 1.13
 github.com/vchrisr/go-freeipa/freeipa
+# github.com/wagslane/go-rabbitmq v0.8.1
+## explicit; go 1.17
+github.com/wagslane/go-rabbitmq
 # golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 ## explicit
 golang.org/x/crypto/ed25519
