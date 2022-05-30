@@ -30,7 +30,7 @@ type notificationServerConfig struct {
 	RedisPassword string `envconfig:"redis_password" default:""`
 	RedisDB       int    `envconfig:"redis_db" default:"0"`
 
-	RabbitURI           string            `enconfig:"rabbit_uri" required:"false"`
+	RabbitURI           string            `envconfig:"rabbit_uri" required:"false"`
 	RabbitExchange      string            `envconfig:"rabbit_exchange" required:"false"`
 	RabbitTemplateFiles map[string]string `envconfig:"rabbit_template_files" required:"false"`
 	RabbitTemplates     map[string]string
@@ -85,7 +85,6 @@ func notificationServerConfigLoad() (notificationServerConfig, error) {
 		log.Fatalln("IPA host configured but username or password are empty.")
 	}
 
-	log.Println("RabbitURI: ", config.RabbitURI)
 	if config.RabbitURI != "" {
 		log.Println("Rabbit configured, loading templates files.")
 		for providerName, filePath := range config.RabbitTemplateFiles {
