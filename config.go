@@ -82,9 +82,10 @@ func notificationServerConfigLoad() (notificationServerConfig, error) {
 	}
 
 	if config.IpaHost != "" && (config.IpaUser == "" || config.IpaPassword == "") {
-		log.Fatalln("IPA host configured but username or pasworde are empty.")
+		log.Fatalln("IPA host configured but username or password are empty.")
 	}
 
+	log.Println("RabbitURI: ", config.RabbitURI)
 	if config.RabbitURI != "" {
 		log.Println("Rabbit configured, loading templates files.")
 		for providerName, filePath := range config.RabbitTemplateFiles {
