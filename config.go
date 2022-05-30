@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 
 	"github.com/cloudfoundry-community/go-cfenv"
@@ -29,9 +30,10 @@ type notificationServerConfig struct {
 	RedisPassword string `envconfig:"redis_password" default:""`
 	RedisDB       int    `envconfig:"redis_db" default:"0"`
 
-	RabbitURI       string            `enconfig:"rabbit_uri" required:"false"`
-	RabbitExchange  string            `envconfig:"rabbit_exchange" required:"false"`
-	RabbitTemplates map[string]string `envconfig:"rabbit_templates" required:"false"`
+	RabbitURI           string            `enconfig:"rabbit_uri" required:"false"`
+	RabbitExchange      string            `envconfig:"rabbit_exchange" required:"false"`
+	RabbitTemplateFiles map[string]string `envconfig:"rabbit_template_files" required:"false"`
+	RabbitTemplates     map[string]string
 
 	ApiUsers map[string]string `envconfig:"api_users" required:"true"`
 
@@ -81,6 +83,17 @@ func notificationServerConfigLoad() (notificationServerConfig, error) {
 
 	if config.IpaHost != "" && (config.IpaUser == "" || config.IpaPassword == "") {
 		log.Fatalln("IPA host configured but username or pasworde are empty.")
+	}
+
+	if config.RabbitURI != "" {
+		log.Println("Rabbit configured, loading templates files.")
+		for providerName, filePath := range config.RabbitTemplateFiles {
+			inBuf, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				return notificationServerConfig{}, err
+			}
+			config.RabbitTemplates[providerName] = string(inBuf)
+		}
 	}
 
 	return config, nil
