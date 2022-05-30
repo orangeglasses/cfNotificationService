@@ -28,7 +28,7 @@ func main() {
 
 	log.Println("Loading environments...")
 	for environment, cfapi := range config.CFApi {
-		log.Println("Creating client for ", environment)
+		log.Println("Creating CF client for ", environment)
 		c := &cfclient.Config{
 			ApiAddress:        "https://" + cfapi,
 			SkipSslValidation: false,
@@ -98,6 +98,7 @@ func main() {
 
 	if config.RabbitURI != "" {
 		for rabbitSender, template := range config.RabbitTemplates {
+			log.Printf("Creating rabbitSender %s\n", rabbitSender)
 			ns.RegisterNotificationSender(rabbitSender, NewRabbitSender(config.RabbitURI, config.RabbitExchange, template))
 		}
 	}
