@@ -168,9 +168,10 @@ func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request
 				log.Printf("Address type %s not valid\n", addressType)
 			}
 
-			fmt.Fprintf(w, "message sent")
 		}
 	}
+
+	fmt.Fprintf(w, "message sent")
 }
 
 func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
