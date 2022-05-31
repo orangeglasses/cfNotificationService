@@ -88,6 +88,7 @@ func notificationServerConfigLoad() (notificationServerConfig, error) {
 	if config.RabbitURI != "" {
 		log.Println("Rabbit configured, loading templates files.")
 		for providerName, filePath := range config.RabbitTemplateFiles {
+			log.Println("  ", filePath)
 			inBuf, err := ioutil.ReadFile(filePath)
 			if err != nil {
 				return notificationServerConfig{}, err
