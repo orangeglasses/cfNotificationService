@@ -198,7 +198,7 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 
 			if !sender.Validate(address) {
 				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintln(w, "Invalid email adres entered")
+				fmt.Fprintf(w, "Invalid %s adres entered\n", senderName)
 			}
 
 			sub.Addresses[senderName] = address
