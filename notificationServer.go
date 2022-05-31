@@ -185,31 +185,33 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	address := r.PostFormValue("address")
-	subType := r.PostFormValue("type")
-
-	//check if address type is valid
-	if _, ok := ns.notificationSenders[subType]; !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	sub := Subscription{
+		Addresses: make(map[string]string),
 	}
 
-	//delete record if email adres is empty
-	if address == "" {
+	for senderName := range ns.notificationSenders {
+		address := r.PostFormValue("address-" + senderName)
+
+		if address != "" {
+
+			switch senderName {
+			case "email":
+				if _, err := mail.ParseAddress(address); err != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					fmt.Fprintln(w, "Invalid email adres entered")
+				}
+			}
+
+			sub.Addresses[senderName] = address
+		}
+	}
+
+	//delete record if no adresses are entered
+	if len(sub.Addresses) == 0 {
 		ns.redisClient.Del(r.Context(), username).Result()
 		http.Redirect(w, r, "//", http.StatusFound)
 		return
 	}
-
-	if _, err := mail.ParseAddress(address); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintln(w, "Invalid email adres entered")
-	}
-
-	sub := Subscription{
-		Addresses: make(map[string]string),
-	}
-	sub.Addresses[subType] = address
 
 	_, err := ns.redisClient.Set(r.Context(), username, sub, 0).Result()
 	if err != nil {
