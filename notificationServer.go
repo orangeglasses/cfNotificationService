@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"sort"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -376,6 +377,8 @@ func (ns *notificationServer) getSupportedSenders() []string {
 	for senderType := range ns.notificationSenders {
 		supportedTypes = append(supportedTypes, senderType)
 	}
+
+	sort.Strings(supportedTypes)
 
 	return supportedTypes
 }
