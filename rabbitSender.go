@@ -47,7 +47,7 @@ func (r *rabbitSender) Send(dest, subject, message string) error {
 	var payload bytes.Buffer
 	payloadTemplate.Execute(&payload, payloadData)
 
-	err = r.publisher.Publish(payload.Bytes(), nil, rabbitmq.WithPublishOptionsExchange(r.exchange))
+	err = r.publisher.Publish(payload.Bytes(), []string{""}, rabbitmq.WithPublishOptionsExchange(r.exchange))
 	if err != nil {
 		log.Fatal(err)
 	}

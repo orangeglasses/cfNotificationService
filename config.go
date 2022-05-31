@@ -33,7 +33,8 @@ type notificationServerConfig struct {
 	RabbitURI           string            `envconfig:"rabbit_uri" required:"false"`
 	RabbitExchange      string            `envconfig:"rabbit_exchange" required:"false"`
 	RabbitTemplateFiles map[string]string `envconfig:"rabbit_template_files" required:"false"`
-	RabbitTemplates     map[string]string
+	//RabbitRoutingKeys   []string          `envconfig:"rabbit_routinkeys" required:"false"`
+	RabbitTemplates map[string]string
 
 	ApiUsers map[string]string `envconfig:"api_users" required:"true"`
 

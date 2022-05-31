@@ -98,7 +98,7 @@ func main() {
 
 	if config.RabbitURI != "" {
 		for rabbitSender, template := range config.RabbitTemplates {
-			log.Printf("Creating rabbitSender %s\n", rabbitSender)
+			log.Printf("Creating rabbitSender %s. Using exchange: %s\n", rabbitSender, config.RabbitExchange)
 			ns.RegisterNotificationSender(rabbitSender, NewRabbitSender(config.RabbitURI, config.RabbitExchange, template))
 		}
 	}
