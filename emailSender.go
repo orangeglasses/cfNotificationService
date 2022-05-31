@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"log"
+	"net/mail"
 
 	"gopkg.in/gomail.v2"
 )
@@ -34,4 +35,12 @@ func (e *emailSender) Send(dest, subject, message string) error {
 	}
 
 	return nil
+}
+
+func (r *emailSender) Validate(address string) bool {
+	if _, err := mail.ParseAddress(address); err != nil {
+		return false
+	}
+
+	return true
 }

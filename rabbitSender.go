@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"log"
+	"regexp"
 	"text/template"
 
 	"github.com/wagslane/go-rabbitmq"
@@ -52,4 +53,10 @@ func (r *rabbitSender) Send(dest, subject, message string) error {
 		log.Fatal(err)
 	}
 	return nil
+}
+
+func (r *rabbitSender) Validate(address string) bool {
+	phoneReString := "^(?:0|(?:\\+|00) ?31 ?)(?:(?:[1-9] ?(?:[0-9] ?){8})|(?:6 ?-? ?[1-9] ?(?:[0-9] ?){7})|(?:[1,2,3,4,5,7,8,9]\\d ?-? ?[1-9] ?(?:[0-9] ?){6})|(?:[1,2,3,4,5,7,8,9]\\d{2} ?-? ?[1-9] ?(?:[0-9] ?){5}))$"
+	match, _ := regexp.MatchString(phoneReString, address)
+	return match
 }

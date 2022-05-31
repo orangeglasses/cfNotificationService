@@ -9,7 +9,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/mail"
 	"sort"
 	"time"
 
@@ -39,6 +38,7 @@ type UserGetter interface {
 
 type NotificationSender interface {
 	Send(string, string, string) error
+	Validate(string) bool
 }
 
 type UserGetters map[string]UserGetter
@@ -191,17 +191,14 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 		Addresses: make(map[string]string),
 	}
 
-	for senderName := range ns.notificationSenders {
+	for senderName, sender := range ns.notificationSenders {
 		address := r.PostFormValue("address-" + senderName)
 
 		if address != "" {
 
-			switch senderName {
-			case "email":
-				if _, err := mail.ParseAddress(address); err != nil {
-					w.WriteHeader(http.StatusBadRequest)
-					fmt.Fprintln(w, "Invalid email adres entered")
-				}
+			if !sender.Validate(address) {
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintln(w, "Invalid email adres entered")
 			}
 
 			sub.Addresses[senderName] = address
