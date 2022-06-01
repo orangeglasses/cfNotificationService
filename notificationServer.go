@@ -39,6 +39,7 @@ type UserGetter interface {
 type NotificationSender interface {
 	Send(string, string, string) error
 	Validate(string) bool
+	GetValidationRE() string
 }
 
 type UserGetters map[string]UserGetter
@@ -243,7 +244,7 @@ func (ns *notificationServer) rootHandler(w http.ResponseWriter, r *http.Request
 	data := struct {
 		AppName    string
 		Username   string
-		Types      []string
+		Types      []supportedSender
 		CurrentSub Subscription
 		Subscribed bool
 		Info       template.HTML
@@ -369,13 +370,30 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 	http.SetCookie(w, c)
 }
 
-func (ns *notificationServer) getSupportedSenders() []string {
-	var supportedTypes []string
-	for senderType := range ns.notificationSenders {
-		supportedTypes = append(supportedTypes, senderType)
+type supportedSender struct {
+	Type         string
+	ValidationRe string
+}
+
+func (ns *notificationServer) getSupportedSenders() []supportedSender {
+	var (
+		supportedTypesList []string
+		supportedTypes     []supportedSender
+	)
+
+	for senderTypeName := range ns.notificationSenders {
+		supportedTypesList = append(supportedTypesList, senderTypeName)
 	}
 
-	sort.Strings(supportedTypes)
+	sort.Strings(supportedTypesList)
+
+	for _, senderTypeName := range supportedTypesList {
+		st := supportedSender{
+			Type:         senderTypeName,
+			ValidationRe: ns.notificationSenders[senderTypeName].GetValidationRE(),
+		}
+		supportedTypes = append(supportedTypes, st)
+	}
 
 	return supportedTypes
 }

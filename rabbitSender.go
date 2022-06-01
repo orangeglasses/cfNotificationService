@@ -10,9 +10,10 @@ import (
 )
 
 type rabbitSender struct {
-	publisher *rabbitmq.Publisher
-	exchange  string
-	template  string
+	publisher    *rabbitmq.Publisher
+	exchange     string
+	template     string
+	validationRE string
 }
 
 func NewRabbitSender(uri, exchange, template string) *rabbitSender {
@@ -22,9 +23,10 @@ func NewRabbitSender(uri, exchange, template string) *rabbitSender {
 	}
 
 	return &rabbitSender{
-		publisher: publisher,
-		exchange:  exchange,
-		template:  template,
+		publisher:    publisher,
+		exchange:     exchange,
+		template:     template,
+		validationRE: "^(?:0|(?:\\+|00) ?31 ?)(?:(?:[1-9] ?(?:[0-9] ?){8})|(?:6 ?-? ?[1-9] ?(?:[0-9] ?){7})|(?:[1,2,3,4,5,7,8,9]\\d ?-? ?[1-9] ?(?:[0-9] ?){6})|(?:[1,2,3,4,5,7,8,9]\\d{2} ?-? ?[1-9] ?(?:[0-9] ?){5}))$",
 	}
 }
 
@@ -56,7 +58,10 @@ func (r *rabbitSender) Send(dest, subject, message string) error {
 }
 
 func (r *rabbitSender) Validate(address string) bool {
-	phoneReString := "^(?:0|(?:\\+|00) ?31 ?)(?:(?:[1-9] ?(?:[0-9] ?){8})|(?:6 ?-? ?[1-9] ?(?:[0-9] ?){7})|(?:[1,2,3,4,5,7,8,9]\\d ?-? ?[1-9] ?(?:[0-9] ?){6})|(?:[1,2,3,4,5,7,8,9]\\d{2} ?-? ?[1-9] ?(?:[0-9] ?){5}))$"
-	match, _ := regexp.MatchString(phoneReString, address)
+	match, _ := regexp.MatchString(r.validationRE, address)
 	return match
+}
+
+func (r *rabbitSender) GetValidationRE() string {
+	return r.validationRE
 }

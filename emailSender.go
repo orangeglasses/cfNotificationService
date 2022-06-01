@@ -3,20 +3,22 @@ package main
 import (
 	"crypto/tls"
 	"log"
-	"net/mail"
+	"regexp"
 
 	"gopkg.in/gomail.v2"
 )
 
 type emailSender struct {
-	From       string
-	mailClient *gomail.Dialer
+	From         string
+	mailClient   *gomail.Dialer
+	validationRE string
 }
 
 func NewEmailSender(host string, port int, from string) *emailSender {
 	return &emailSender{
-		From:       from,
-		mailClient: &gomail.Dialer{Host: host, Port: port, TLSConfig: &tls.Config{InsecureSkipVerify: true}},
+		From:         from,
+		mailClient:   &gomail.Dialer{Host: host, Port: port, TLSConfig: &tls.Config{InsecureSkipVerify: true}},
+		validationRE: "^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$",
 	}
 }
 
@@ -38,9 +40,10 @@ func (e *emailSender) Send(dest, subject, message string) error {
 }
 
 func (r *emailSender) Validate(address string) bool {
-	if _, err := mail.ParseAddress(address); err != nil {
-		return false
-	}
+	match, _ := regexp.MatchString(r.validationRE, address)
+	return match
+}
 
-	return true
+func (r *emailSender) GetValidationRE() string {
+	return r.validationRE
 }
