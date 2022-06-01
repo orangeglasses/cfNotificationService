@@ -201,9 +201,9 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 				w.WriteHeader(http.StatusBadRequest)
 				fmt.Fprintf(w, "Invalid %s adres entered\n", senderName)
 			}
-
-			sub.Addresses[senderName] = address
 		}
+
+		sub.Addresses[senderName] = address
 	}
 
 	//delete record if no adresses are entered
