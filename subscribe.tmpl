@@ -17,7 +17,7 @@
             <form class='form-requestform' action="/subscribe/{{.Username}}" method="post">   
                 {{- $currentSubAddresses := .CurrentSub.Addresses -}}
                 {{- range .Types -}}                                                               
-                <p><input class='input-username' type="text" name="address-{{.Type}}" placeholder="enter {{.Type}} address" value="{{index $currentSubAddresses .}}" pattern={{.ValidationRE}}></p>                
+                <p><input class='input-username' type="text" name="address-{{.Type}}" placeholder="enter {{.Type}} address" value="{{index $currentSubAddresses .Type}}" pattern={{.ValidationRE}}></p>                
                 {{ end }}
                 <p><input class='input-submit' type="submit" value="SAVE"></p>                
             </form>
