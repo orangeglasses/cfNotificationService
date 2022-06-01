@@ -372,7 +372,7 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 
 type supportedSender struct {
 	Type         string
-	ValidationRe string
+	ValidationRE string
 }
 
 func (ns *notificationServer) getSupportedSenders() []supportedSender {
@@ -390,7 +390,7 @@ func (ns *notificationServer) getSupportedSenders() []supportedSender {
 	for _, senderTypeName := range supportedTypesList {
 		st := supportedSender{
 			Type:         senderTypeName,
-			ValidationRe: ns.notificationSenders[senderTypeName].GetValidationRE(),
+			ValidationRE: ns.notificationSenders[senderTypeName].GetValidationRE(),
 		}
 		supportedTypes = append(supportedTypes, st)
 	}
