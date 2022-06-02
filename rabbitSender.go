@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"regexp"
 	"text/template"
@@ -31,6 +32,9 @@ func NewRabbitSender(uri, exchange, template string) *rabbitSender {
 }
 
 func (r *rabbitSender) Send(dest, subject, message string) error {
+	if dest == "" {
+		return fmt.Errorf("No destination address given")
+	}
 	log.Printf("sending message to %s. Subject: %v, message: %v\n", dest, subject, message)
 	payloadTemplate, err := template.New("msg").Parse(r.template)
 	if err != nil {

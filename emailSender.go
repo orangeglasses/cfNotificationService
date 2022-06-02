@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"log"
 	"regexp"
 
@@ -23,6 +24,10 @@ func NewEmailSender(host string, port int, from string) *emailSender {
 }
 
 func (e *emailSender) Send(dest, subject, message string) error {
+	if dest == "" {
+		return fmt.Errorf("No destination address given")
+	}
+
 	log.Printf("sending message to %s. Subject: %v, message: %v\n", dest, subject, message)
 
 	m := gomail.NewMessage()
