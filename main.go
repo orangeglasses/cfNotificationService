@@ -72,10 +72,14 @@ func main() {
 			Password: config.RedisPassword,
 			DB:       config.RedisDB,
 		}),
-		apiUsers:     config.ApiUsers,
-		sessionStore: sessions.NewCookieStore([]byte(config.SessionKey)),
-		appName:      config.AppName,
-		appInfo:      config.AppInfo,
+		apiUsers:       config.ApiUsers,
+		sessionStore:   sessions.NewCookieStore([]byte(config.SessionKey)),
+		appName:        config.AppName,
+		appInfo:        config.AppInfo,
+		welcomeSubject: config.WelcomeSubject,
+		welcomeMessage: config.WelcomeMessage,
+		goodbyeSubject: config.GoodbyeSubject,
+		goodbyeMessage: config.GoodbyeMessage,
 	}
 
 	ns.RegisterUserGetter("space", cfSpaceUserGetter)

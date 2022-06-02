@@ -46,6 +46,11 @@ type notificationServerConfig struct {
 	AppName string `envconfig:"app_name"`
 	AppInfo string `envconfig:"app_info"`
 
+	WelcomeSubject string `envconfig:"welcome_subject"`
+	WelcomeMessage string `envconfig:"welcome_message"`
+	GoodbyeSubject string `envconfig:"goodbye_subject"`
+	GoodbyeMessage string `envconfig:"goodbye_message"`
+
 	AppPort int `default:"9000"`
 }
 

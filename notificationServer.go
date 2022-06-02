@@ -30,6 +30,10 @@ type notificationServer struct {
 	oidcConfig          *oidc.Config
 	appName             string
 	appInfo             string
+	welcomeSubject      string
+	welcomeMessage      string
+	goodbyeSubject      string
+	goodbyeMessage      string
 }
 
 type UserGetter interface {
@@ -158,7 +162,7 @@ func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request
 	//check if there are any recipients
 	if len(subScriptions) == 0 {
 		log.Println("Message send to target without recipients")
-		fmt.Fprintf(w, "No recipients found for %s with id %s", msg.Target.Type, msg.Id)
+		fmt.Fprintf(w, "No recipients found for %s with id %s", msg.Target.Type, msg.Target.Id)
 	}
 
 	//and then sent it
@@ -182,13 +186,15 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 	vars := mux.Vars(r)
 	username, _ := vars["username"]
 
+	//check session
 	session, _ := ns.sessionStore.Get(r, "sub-session")
 	if u, ok := session.Values["userName"]; !ok || u != username {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
-	sub := Subscription{
+	//get new subscribtion info
+	newSub := Subscription{
 		Addresses: make(map[string]string),
 	}
 
@@ -203,17 +209,47 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 			}
 		}
 
-		sub.Addresses[senderName] = address
+		newSub.Addresses[senderName] = address
+	}
+
+	existingSub := Subscription{
+		Addresses: make(map[string]string),
+	}
+
+	existingSubString, _ := ns.redisClient.Get(r.Context(), username).Result()
+	if existingSubString != "" {
+		json.Unmarshal([]byte(existingSubString), &existingSub)
+	}
+
+	//find changes and sent out goodbye and welcome messages
+	for newAddrType, newAddr := range newSub.Addresses {
+		if oldAddr, found := existingSub.Addresses[newAddrType]; !found || (found && oldAddr != newAddr) {
+			if sender, ok := ns.notificationSenders[newAddrType]; ok {
+				go sender.Send(newAddr, ns.welcomeSubject, ns.welcomeMessage)
+			} else {
+				log.Printf("Address type %s not valid\n", newAddrType)
+			}
+		}
+	}
+
+	for oldAddrType, oldAddr := range existingSub.Addresses {
+		if newAddr, found := newSub.Addresses[oldAddrType]; !found || (found && newAddr != oldAddr) {
+			if sender, ok := ns.notificationSenders[oldAddrType]; ok {
+				go sender.Send(oldAddr, ns.goodbyeSubject, ns.goodbyeMessage)
+			} else {
+				log.Printf("Address type %s not valid\n", oldAddrType)
+			}
+		}
 	}
 
 	//delete record if no adresses are entered
-	if len(sub.Addresses) == 0 {
+	if len(newSub.Addresses) == 0 {
 		ns.redisClient.Del(r.Context(), username).Result()
 		http.Redirect(w, r, "//", http.StatusFound)
 		return
 	}
 
-	_, err := ns.redisClient.Set(r.Context(), username, sub, 0).Result()
+	_, err := ns.redisClient.Set(r.Context(), username, newSub, 0).Result()
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
