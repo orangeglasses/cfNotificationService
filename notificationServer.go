@@ -71,6 +71,18 @@ func (ns *notificationServer) RegisterNotificationSender(name string, sender Not
 	ns.notificationSenders[name] = sender
 }
 
+func (ns *notificationServer) statsHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	ctx := r.Context()
+
+	totalKeys, _ := ns.redisClient.DBSize(ctx).Result()
+	msgKeys, c, _ := ns.redisClient.Scan(ctx, 0, "msg-*", 20000).Result()
+	fmt.Println(c)
+	fmt.Fprintf(w, "total keys: %v \nmessages stored: %v", totalKeys, len(msgKeys))
+
+}
+
 func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

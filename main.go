@@ -117,6 +117,8 @@ func main() {
 	r.Path("/login").HandlerFunc(ns.HandleRedirect)
 	r.Path("/oauth2").HandlerFunc(ns.HandleOauthCallback)
 
+	r.Path("/stats").HandlerFunc(ns.statsHandler)
+
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	http.ListenAndServe(fmt.Sprintf(":%v", appEnv.Port), r)
