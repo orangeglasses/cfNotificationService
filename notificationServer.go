@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -87,15 +88,35 @@ func (ns *notificationServer) statsHandler(w http.ResponseWriter, r *http.Reques
 
 	ctx := r.Context()
 
-	totalKeys, _ := ns.redisClient.DBSize(ctx).Result()
-	msgKeys, _, _ := ns.redisClient.Scan(ctx, 0, "msg-*", totalKeys).Result()
+	numAllKeys, _ := ns.redisClient.DBSize(ctx).Result()
+	numCounters := int64(len(ns.notificationSenders))
+	msgKeys, _, _ := ns.redisClient.Scan(ctx, 0, "msg-*", numAllKeys).Result()
+	numMsgKeys := int64(len(msgKeys))
+	numUsers := numAllKeys - numMsgKeys - numCounters
 
 	stats := struct {
-		MessagesStored  int64 `json:"messages_stored"`
-		UsersSubscribed int64 `json:"users_subscribed"`
+		MessagesStored  int64            `json:"messages_stored"`
+		UsersSubscribed int64            `json:"users_subscribed"`
+		MsgSent         map[string]int64 `json:"messages_sent"`
 	}{
-		MessagesStored:  int64(len(msgKeys)),
-		UsersSubscribed: totalKeys - int64(len(msgKeys)),
+		MessagesStored:  numMsgKeys,
+		UsersSubscribed: numUsers,
+		MsgSent:         make(map[string]int64),
+	}
+
+	for senderType, _ := range ns.notificationSenders {
+		counterKey := "counter-" + senderType
+		counterValString, err := ns.redisClient.Get(ctx, counterKey).Result()
+		if err != nil {
+			counterValString = "0"
+		}
+
+		counterVal, err := strconv.Atoi(counterValString)
+		if err != nil {
+			log.Printf("error converting string to number: %v\n", err.Error())
+		}
+
+		stats.MsgSent[counterKey] = int64(counterVal)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -201,6 +222,8 @@ func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request
 		for addressType, address := range ci.Addresses {
 			if sender, ok := ns.notificationSenders[addressType]; ok {
 				go sender.Send(address, msg.Subject, msg.Message)
+				//increase msg type counter here
+				ns.redisClient.Do(ctx, "HINCRBY", "counter-"+addressType, 1)
 			} else {
 				log.Printf("Address type %s not valid\n", addressType)
 			}
