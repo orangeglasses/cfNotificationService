@@ -94,6 +94,8 @@ func (ns *notificationServer) statsHandler(w http.ResponseWriter, r *http.Reques
 	numMsgKeys := int64(len(msgKeys))
 	numUsers := numAllKeys - numMsgKeys - numCounters
 
+	fmt.Printf("allkeys: %v, numCounters: %v, msgKeys: %v", numAllKeys, numCounters, numMsgKeys)
+
 	stats := struct {
 		MessagesStored  int64            `json:"messages_stored"`
 		UsersSubscribed int64            `json:"users_subscribed"`
@@ -104,7 +106,7 @@ func (ns *notificationServer) statsHandler(w http.ResponseWriter, r *http.Reques
 		MsgSent:         make(map[string]int64),
 	}
 
-	for senderType, _ := range ns.notificationSenders {
+	for senderType := range ns.notificationSenders {
 		counterKey := "counter-" + senderType
 		counterValString, err := ns.redisClient.Get(ctx, counterKey).Result()
 		if err != nil {
@@ -223,7 +225,10 @@ func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request
 			if sender, ok := ns.notificationSenders[addressType]; ok {
 				go sender.Send(address, msg.Subject, msg.Message)
 				//increase msg type counter here
-				ns.redisClient.Do(ctx, "HINCRBY", "counter-"+addressType, 1)
+				_, err := ns.redisClient.Do(ctx, "HINCRBY", "counter-"+addressType, 1).Result()
+				if err != nil {
+					log.Println(err)
+				}
 			} else {
 				log.Printf("Address type %s not valid\n", addressType)
 			}
