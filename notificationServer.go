@@ -89,12 +89,11 @@ func (ns *notificationServer) statsHandler(w http.ResponseWriter, r *http.Reques
 	ctx := r.Context()
 
 	numAllKeys, _ := ns.redisClient.DBSize(ctx).Result()
-	numCounters := int64(len(ns.notificationSenders))
 	msgKeys, _, _ := ns.redisClient.Scan(ctx, 0, "msg-*", numAllKeys).Result()
 	numMsgKeys := int64(len(msgKeys))
-	numUsers := numAllKeys - numMsgKeys - numCounters
+	numUsers := numAllKeys - numMsgKeys - 1
 
-	fmt.Printf("allkeys: %v, numCounters: %v, msgKeys: %v", numAllKeys, numCounters, numMsgKeys)
+	fmt.Printf("allkeys: %v, msgKeys: %v", numAllKeys, numMsgKeys)
 
 	stats := struct {
 		MessagesStored  int64            `json:"messages_stored"`
@@ -106,9 +105,10 @@ func (ns *notificationServer) statsHandler(w http.ResponseWriter, r *http.Reques
 		MsgSent:         make(map[string]int64),
 	}
 
-	for senderType := range ns.notificationSenders {
-		counterKey := "counter-" + senderType
-		counterValString, err := ns.redisClient.Get(ctx, counterKey).Result()
+	counterKeys, _ := ns.redisClient.HKeys(ctx, "counters").Result()
+
+	for _, counterKey := range counterKeys {
+		counterValString, err := ns.redisClient.HGet(ctx, "counters", counterKey).Result()
 		if err != nil {
 			counterValString = "0"
 		}
@@ -225,7 +225,7 @@ func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request
 			if sender, ok := ns.notificationSenders[addressType]; ok {
 				go sender.Send(address, msg.Subject, msg.Message)
 				//increase msg type counter here
-				_, err := ns.redisClient.Do(ctx, "HINCRBY", "counter-"+addressType, 1).Result()
+				_, err := ns.redisClient.Do(ctx, "HINCRBY", "counters", addressType, 1).Result()
 				if err != nil {
 					log.Println(err)
 				}
