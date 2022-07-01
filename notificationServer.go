@@ -74,13 +74,32 @@ func (ns *notificationServer) RegisterNotificationSender(name string, sender Not
 func (ns *notificationServer) statsHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	/*u, p, ok := r.BasicAuth()
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if expectedPw, ok := ns.apiUsers[u]; !ok || expectedPw != p {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}*/
+
 	ctx := r.Context()
 
 	totalKeys, _ := ns.redisClient.DBSize(ctx).Result()
-	msgKeys, c, _ := ns.redisClient.Scan(ctx, 0, "msg-*", 20000).Result()
-	fmt.Println(c)
-	fmt.Fprintf(w, "total keys: %v \nmessages stored: %v", totalKeys, len(msgKeys))
+	msgKeys, _, _ := ns.redisClient.Scan(ctx, 0, "msg-*", totalKeys).Result()
 
+	stats := struct {
+		MessagesStored  int64 `json:"messages_stored"`
+		UsersSubscribed int64 `json:"users_subscribed"`
+	}{
+		MessagesStored:  int64(len(msgKeys)),
+		UsersSubscribed: totalKeys - int64(len(msgKeys)),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
 }
 
 func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request) {
