@@ -222,18 +222,19 @@ func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request
 	//and then sent it
 	for _, ci := range subScriptions {
 		for addressType, address := range ci.Addresses {
-			if sender, ok := ns.notificationSenders[addressType]; ok && address != "" {
-				go sender.Send(address, msg.Subject, msg.Message)
+			if address != "" {
+				if sender, ok := ns.notificationSenders[addressType]; ok {
+					go sender.Send(address, msg.Subject, msg.Message)
 
-				_, err := ns.redisClient.Do(ctx, "HINCRBY", "counters", addressType, 1).Result()
-				if err != nil {
-					log.Println(err)
+					_, err := ns.redisClient.Do(ctx, "HINCRBY", "counters", addressType, 1).Result()
+					if err != nil {
+						log.Println(err)
+					}
+
+				} else {
+					log.Printf("Address type %s not valid\n", addressType)
 				}
-
-			} else {
-				log.Printf("Address type %s not valid\n", addressType)
 			}
-
 		}
 	}
 
