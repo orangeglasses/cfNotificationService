@@ -57,6 +57,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	redisCl := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%v:%v", config.RedisHost, config.RedisPort),
+		Password: config.RedisPassword,
+		DB:       config.RedisDB,
+	})
+
 	ns := &notificationServer{
 		oauthConfig: oauth2.Config{
 			ClientID:     config.ClientID,
@@ -69,11 +75,7 @@ func main() {
 		oidcConfig: &oidc.Config{
 			ClientID: config.ClientID,
 		},
-		redisClient: redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%v:%v", config.RedisHost, config.RedisPort),
-			Password: config.RedisPassword,
-			DB:       config.RedisDB,
-		}),
+		redisClient:    redisCl,
 		apiUsers:       config.ApiUsers,
 		sessionStore:   sessions.NewCookieStore([]byte(config.SessionKey)),
 		appName:        config.AppName,
@@ -109,7 +111,7 @@ func main() {
 		}
 	}
 
-	collector := NewStatsCollector(ns.redisClient)
+	collector := NewStatsCollector(redisCl)
 	prometheus.MustRegister(collector)
 
 	r := mux.NewRouter()
