@@ -29,12 +29,12 @@ func NewStatsCollector(rc *redis.Client) *StatsCollector {
 	labels := prometheus.Labels{"app": "cfNotificationService"}
 	s := &StatsCollector{
 		redisClient: rc,
-		MessagesStoredDesc: prometheus.NewDesc(prometheus.BuildFQName("cfNotificationService", "stats", "messages_stored"),
+		MessagesStoredDesc: prometheus.NewDesc(prometheus.BuildFQName("cfnotificationservice", "", "messages_stored"),
 			"Number of messages currently stored",
 			nil,
 			labels,
 		),
-		UsersSubscribedDesc: prometheus.NewDesc(prometheus.BuildFQName("cfNotificationService", "stats", "users_subscribed"),
+		UsersSubscribedDesc: prometheus.NewDesc(prometheus.BuildFQName("cfnotificationservice", "", "users_subscribed"),
 			"Number of messages currently stored",
 			nil,
 			labels,
@@ -45,7 +45,7 @@ func NewStatsCollector(rc *redis.Client) *StatsCollector {
 	stats := s.Get(context.Background())
 
 	for counterKey := range stats.MsgSent {
-		s.MsgSentDesc[counterKey] = prometheus.NewDesc(prometheus.BuildFQName("cfNotificationService", "stats", "messages_sent_"+counterKey),
+		s.MsgSentDesc[counterKey] = prometheus.NewDesc(prometheus.BuildFQName("cfnotificationservice", "", "messages_sent_"+counterKey),
 			"Number of "+counterKey+"messages sent",
 			nil,
 			labels,
