@@ -26,7 +26,7 @@ type StatsCollector struct {
 }
 
 func NewStatsCollector(rc *redis.Client) *StatsCollector {
-	labels := prometheus.Labels{"app": "cfNotificationService"}
+	labels := prometheus.Labels{}
 	s := &StatsCollector{
 		redisClient: rc,
 		MessagesStoredDesc: prometheus.NewDesc(prometheus.BuildFQName("cfnotificationservice", "", "messages_stored"),
