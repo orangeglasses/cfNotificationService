@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -70,59 +69,6 @@ func (ns *notificationServer) RegisterNotificationSender(name string, sender Not
 		ns.notificationSenders = make(NotificationSenders)
 	}
 	ns.notificationSenders[name] = sender
-}
-
-func (ns *notificationServer) statsHandler(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	/*u, p, ok := r.BasicAuth()
-	if !ok {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	if expectedPw, ok := ns.apiUsers[u]; !ok || expectedPw != p {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}*/
-
-	ctx := r.Context()
-
-	numAllKeys, _ := ns.redisClient.DBSize(ctx).Result()
-	msgKeys, _, _ := ns.redisClient.Scan(ctx, 0, "msg-*", numAllKeys).Result()
-	numMsgKeys := int64(len(msgKeys))
-	numUsers := numAllKeys - numMsgKeys - 1
-
-	fmt.Printf("allkeys: %v, msgKeys: %v", numAllKeys, numMsgKeys)
-
-	stats := struct {
-		MessagesStored  int64            `json:"messages_stored"`
-		UsersSubscribed int64            `json:"users_subscribed"`
-		MsgSent         map[string]int64 `json:"messages_sent"`
-	}{
-		MessagesStored:  numMsgKeys,
-		UsersSubscribed: numUsers,
-		MsgSent:         make(map[string]int64),
-	}
-
-	counterKeys, _ := ns.redisClient.HKeys(ctx, "counters").Result()
-
-	for _, counterKey := range counterKeys {
-		counterValString, err := ns.redisClient.HGet(ctx, "counters", counterKey).Result()
-		if err != nil {
-			counterValString = "0"
-		}
-
-		counterVal, err := strconv.Atoi(counterValString)
-		if err != nil {
-			log.Printf("error converting string to number: %v\n", err.Error())
-		}
-
-		stats.MsgSent[counterKey] = int64(counterVal)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(stats)
 }
 
 func (ns *notificationServer) sendHandler(w http.ResponseWriter, r *http.Request) {

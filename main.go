@@ -13,6 +13,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vchrisr/go-freeipa/freeipa"
 	"golang.org/x/oauth2"
 )
@@ -107,6 +109,9 @@ func main() {
 		}
 	}
 
+	collector := NewStatsCollector(ns.redisClient)
+	prometheus.MustRegister(collector)
+
 	r := mux.NewRouter()
 	r.Path("/").Methods(http.MethodGet).HandlerFunc(ns.rootHandler)
 	r.Path("/send").Methods(http.MethodPost).HandlerFunc(ns.sendHandler)
@@ -117,7 +122,8 @@ func main() {
 	r.Path("/login").HandlerFunc(ns.HandleRedirect)
 	r.Path("/oauth2").HandlerFunc(ns.HandleOauthCallback)
 
-	r.Path("/stats").HandlerFunc(ns.statsHandler)
+	r.Path("/stats").HandlerFunc(collector.statsHandler)
+	r.Path("/metrics").Handler(promhttp.Handler())
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
