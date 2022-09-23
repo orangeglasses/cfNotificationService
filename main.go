@@ -124,6 +124,8 @@ func main() {
 	r.Path("/login").HandlerFunc(ns.HandleRedirect)
 	r.Path("/oauth2").HandlerFunc(ns.HandleOauthCallback)
 
+	r.Path("/subscribers").HandlerFunc(ns.getSubscribersHandler)
+
 	r.Path("/stats").HandlerFunc(collector.statsHandler)
 	r.Path("/metrics").Handler(promhttp.Handler())
 

@@ -62,7 +62,7 @@ func (s *StatsCollector) Get(ctx context.Context) Stats {
 	numAllKeys, _ := s.redisClient.DBSize(ctx).Result()
 	msgKeys, _, _ := s.redisClient.Scan(ctx, 0, "msg-*", numAllKeys).Result()
 	numMsgKeys := int64(len(msgKeys))
-	numUsers := numAllKeys - numMsgKeys - 1
+	numUsers := numAllKeys - (numMsgKeys + 1) //+1 because counters is a key as well
 
 	stats = Stats{
 		MessagesStored:  numMsgKeys,
