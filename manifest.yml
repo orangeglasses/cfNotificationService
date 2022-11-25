@@ -7,7 +7,7 @@ applications:
 #    EMAIL_HOST: 192.168.192.238
 #    EMAIL_PORT: '1025'
 #    EMAIL_FROM: cfNotificationService@test.local
-    GOVERSION: '1.17'
+    GOVERSION: '1.18'
 #    CF_API: ota:api.sys.cf.automate-it.lab
 #    API_USERS: testuser:testpassword
 #    CLIENT_ID: testclient
