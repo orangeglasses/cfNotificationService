@@ -214,9 +214,10 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 				w.WriteHeader(http.StatusBadRequest)
 				fmt.Fprintf(w, "Invalid %s adres entered\n", senderName)
 			}
+
+			newSub.Addresses[senderName] = address
 		}
 
-		newSub.Addresses[senderName] = address
 	}
 
 	existingSub := Subscription{
@@ -230,7 +231,7 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 
 	//find changes and sent out goodbye and welcome messages
 	for newAddrType, newAddr := range newSub.Addresses {
-		if oldAddr, found := existingSub.Addresses[newAddrType]; !found || (found && oldAddr != newAddr && newAddr != "") {
+		if oldAddr, found := existingSub.Addresses[newAddrType]; !found || ((found && oldAddr != newAddr) && newAddr != "") {
 			if sender, ok := ns.notificationSenders[newAddrType]; ok {
 				go sender.Send(newAddr, ns.welcomeSubject, ns.welcomeMessage)
 			} else {
@@ -240,7 +241,7 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	for oldAddrType, oldAddr := range existingSub.Addresses {
-		if newAddr, found := newSub.Addresses[oldAddrType]; !found || (found && newAddr != oldAddr && oldAddr != "") {
+		if newAddr, found := newSub.Addresses[oldAddrType]; !found || ((found && newAddr != oldAddr) && oldAddr != "") {
 			if sender, ok := ns.notificationSenders[oldAddrType]; ok {
 				go sender.Send(oldAddr, ns.goodbyeSubject, ns.goodbyeMessage)
 			} else {
@@ -252,7 +253,7 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 	//delete record if no adresses are entered
 	if len(newSub.Addresses) == 0 {
 		ns.redisClient.Del(r.Context(), username).Result()
-		http.Redirect(w, r, "//", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
