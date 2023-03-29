@@ -192,32 +192,37 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 
 	vars := mux.Vars(r)
 	username, _ := vars["username"]
-
-	//check session
 	session, _ := ns.sessionStore.Get(r, "sub-session")
-	if u, ok := session.Values["userName"]; !ok || u != username {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
 
 	//get new subscribtion info
 	newSub := Subscription{
 		Addresses: make(map[string]string),
 	}
 
-	for senderName, sender := range ns.notificationSenders {
-		address := r.PostFormValue("address-" + senderName)
+	if flashes := session.Flashes(); len(flashes) > 0 {
+		newSub = flashes[0].(Subscription)
+	} else {
+		for senderName, sender := range ns.notificationSenders {
+			address := r.PostFormValue("address-" + senderName)
 
-		if address != "" {
+			if address != "" {
 
-			if !sender.Validate(address) {
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintf(w, "Invalid %s adres entered\n", senderName)
+				if !sender.Validate(address) {
+					w.WriteHeader(http.StatusBadRequest)
+					fmt.Fprintf(w, "Invalid %s adres entered\n", senderName)
+				}
+
+				newSub.Addresses[senderName] = address
 			}
-
-			newSub.Addresses[senderName] = address
 		}
+	}
 
+	//check session
+	if u, ok := session.Values["userName"]; !ok || u != username {
+		session.AddFlash(newSub)
+		log.Println("unauthorized user tried to update subscribtion, redirecting.")
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	existingSub := Subscription{

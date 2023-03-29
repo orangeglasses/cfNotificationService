@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,6 +21,8 @@ import (
 )
 
 func main() {
+	gob.Register(Subscription{})
+
 	appEnv, _ := cfenv.Current()
 	config, err := notificationServerConfigLoad()
 	if err != nil {
