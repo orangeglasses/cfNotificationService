@@ -408,6 +408,7 @@ func (ns *notificationServer) HandleOauthCallback(w http.ResponseWriter, r *http
 	nextCookie, err := r.Cookie("next")
 	if err == nil {
 		http.Redirect(w, r, "/"+nextCookie.Value, http.StatusFound)
+		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusFound)
