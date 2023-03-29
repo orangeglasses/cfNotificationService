@@ -18,7 +18,12 @@ type rabbitSender struct {
 }
 
 func NewRabbitSender(uri, exchange, template string) *rabbitSender {
-	publisher, err := rabbitmq.NewPublisher(uri, rabbitmq.Config{})
+	conn, err := rabbitmq.NewConn(uri)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	publisher, err := rabbitmq.NewPublisher(conn)
 	if err != nil {
 		log.Fatal(err)
 	}
