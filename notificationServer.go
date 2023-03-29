@@ -220,6 +220,7 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 	//check session
 	if u, ok := session.Values["userName"]; !ok || u != username {
 		session.AddFlash(newSub)
+		session.Save(r, w)
 		log.Println("unauthorized user tried to update subscribtion, redirecting.")
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
