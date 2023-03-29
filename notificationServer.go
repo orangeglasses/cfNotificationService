@@ -192,38 +192,32 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 
 	vars := mux.Vars(r)
 	username, _ := vars["username"]
+
+	//check session
 	session, _ := ns.sessionStore.Get(r, "sub-session")
+	if u, ok := session.Values["userName"]; !ok || u != username {
+		log.Println("unauthenticated user tried to update subscribtion, redirecting.")
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
 
 	//get new subscribtion info
 	newSub := Subscription{
 		Addresses: make(map[string]string),
 	}
 
-	if flashes := session.Flashes(); len(flashes) > 0 {
-		newSub = flashes[0].(Subscription)
-	} else {
-		for senderName, sender := range ns.notificationSenders {
-			address := r.PostFormValue("address-" + senderName)
+	for senderName, sender := range ns.notificationSenders {
+		address := r.PostFormValue("address-" + senderName)
 
-			if address != "" {
+		if address != "" {
 
-				if !sender.Validate(address) {
-					w.WriteHeader(http.StatusBadRequest)
-					fmt.Fprintf(w, "Invalid %s adres entered\n", senderName)
-				}
-
-				newSub.Addresses[senderName] = address
+			if !sender.Validate(address) {
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintf(w, "Invalid %s adres entered\n", senderName)
 			}
-		}
-	}
 
-	//check session
-	if u, ok := session.Values["userName"]; !ok || u != username {
-		session.AddFlash(newSub)
-		session.Save(r, w)
-		log.Println("unauthorized user tried to update subscribtion, redirecting.")
-		http.Redirect(w, r, "/login?next=subscribe/"+username, http.StatusFound)
-		return
+			newSub.Addresses[senderName] = address
+		}
 	}
 
 	existingSub := Subscription{
@@ -397,17 +391,11 @@ func (ns *notificationServer) HandleOauthCallback(w http.ResponseWriter, r *http
 
 	//store session
 	session.Values["userName"] = tokenClaim.UserName
-	session.Options.MaxAge = 60
+	session.Options.MaxAge = 600
 
 	err = session.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	nextCookie, err := r.Cookie("next")
-	if err == nil {
-		http.Redirect(w, r, "/"+nextCookie.Value, http.StatusFound)
 		return
 	}
 
