@@ -222,7 +222,7 @@ func (ns *notificationServer) subscribeHandler(w http.ResponseWriter, r *http.Re
 		session.AddFlash(newSub)
 		session.Save(r, w)
 		log.Println("unauthorized user tried to update subscribtion, redirecting.")
-		http.Redirect(w, r, "/login", http.StatusFound)
+		http.Redirect(w, r, "/login?next=subscribe/"+username, http.StatusFound)
 		return
 	}
 
@@ -320,6 +320,9 @@ func (ns *notificationServer) HandleLogout(w http.ResponseWriter, r *http.Reques
 }
 
 func (ns *notificationServer) HandleRedirect(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	next, hasNext := vars["next"]
+
 	state, err := randString(16)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -332,6 +335,10 @@ func (ns *notificationServer) HandleRedirect(w http.ResponseWriter, r *http.Requ
 	}
 	setCallbackCookie(w, r, "state", state)
 	setCallbackCookie(w, r, "nonce", nonce)
+
+	if hasNext {
+		setCallbackCookie(w, r, "next", next)
+	}
 
 	http.Redirect(w, r, ns.oauthConfig.AuthCodeURL(state, oidc.Nonce(nonce)), http.StatusFound)
 }
@@ -396,6 +403,11 @@ func (ns *notificationServer) HandleOauthCallback(w http.ResponseWriter, r *http
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	nextCookie, err := r.Cookie("next")
+	if err == nil {
+		http.Redirect(w, r, "/"+nextCookie.Value, http.StatusFound)
 	}
 
 	http.Redirect(w, r, "/", http.StatusFound)

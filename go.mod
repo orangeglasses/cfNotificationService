@@ -1,6 +1,6 @@
 module github.com/orangeglasses/cfNotificationService
 
-go 1.18
+go 1.19
 
 require (
 	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220930021109-9c4e6c59ccf1

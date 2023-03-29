@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfenv"
@@ -87,6 +88,11 @@ func main() {
 		welcomeMessage: config.WelcomeMessage,
 		goodbyeSubject: config.GoodbyeSubject,
 		goodbyeMessage: config.GoodbyeMessage,
+	}
+
+	ns.sessionStore.Options = &sessions.Options{
+		Path:   "/",
+		MaxAge: int(time.Hour * 24),
 	}
 
 	ns.RegisterUserGetter("space", cfSpaceUserGetter)
